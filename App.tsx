@@ -6,11 +6,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 
 const STORAGE_KEY = '@toDos'
-
+type ToDo = {
+  text: string
+  working: boolean
+}
+    
+type M = string | number
 export default function App() {
   const [working, setWorking] = useState(true)
   const [text, setText] = useState("")
-  const [toDos, setTodos] = useState<any>({})
+  const [toDos, setTodos] = useState<{ [key: string]: ToDo} | undefined>(undefined)
   const onPressLife = () => setWorking(false)
   const onPressWork = () => setWorking(true) 
   const onChangeText = (payload: SetStateAction<string>) => setText(payload)
@@ -23,7 +28,7 @@ export default function App() {
   }
   const loadToDos = async () => {
    try {
-    const data:any  =  await AsyncStorage.getItem(STORAGE_KEY)
+    const data: any  =  await AsyncStorage.getItem(STORAGE_KEY)
     setTodos(JSON.parse(data))
    } catch(error) {
     console.error('load error', error)
@@ -70,7 +75,7 @@ export default function App() {
         </TouchableOpacity>
       </View>
         <TextInput onSubmitEditing={addTodo} onChangeText={onChangeText} value={text} returnKeyType="done"  placeholder={"Add a Todo"} style={styles.input}/>
-        <ScrollView>{Object.keys(toDos).map(key => 
+        <ScrollView>{ toDos && Object.keys(toDos).map(key => 
         toDos[key].working === working ? (
           <View style={styles.toDo} key={key}>
             <Text style={styles.toDoText}>{toDos[key].text}</Text>
