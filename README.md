@@ -8,5 +8,5 @@
 
 #### 추가 업데이트
 - [x] 앱 초기 실행시, 이전에 저장했던 Menu 값으로 세팅
-- [ ] todo 완료 처리하기 (complete)
+- [x] todo 완료 처리하기 (complete)
 - [ ] text 수정 기능
