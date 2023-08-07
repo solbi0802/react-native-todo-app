@@ -10,15 +10,22 @@ type ToDo = {
   text: string
   working: boolean
 }
+const MENU_KEY = '@menu'
     
 type M = string | number
 export default function App() {
   const [working, setWorking] = useState(true)
   const [text, setText] = useState("")
   const [toDos, setTodos] = useState<{ [key: string]: ToDo} | undefined>(undefined)
-  const onPressLife = () => setWorking(false)
-  const onPressWork = () => setWorking(true) 
+  const onPressLife = () => {
+    saveToMenu(false)
+    setWorking(false)}
+  const onPressWork = () => {
+    saveToMenu(true)
+    setWorking(true)
+  }
   const onChangeText = (payload: SetStateAction<string>) => setText(payload)
+
   const saveToDos = async (toSave: any) => {
     try {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
@@ -26,14 +33,34 @@ export default function App() {
       console.error('save error', error)
     }
   }
+
+  const saveToMenu = async(workingValue:boolean) => {
+ try {
+    await AsyncStorage.setItem(MENU_KEY, JSON.stringify(workingValue))
+    } catch(error) {
+      console.error('save menu error', error)
+    }
+  }
+
   const loadToDos = async () => {
    try {
     const data: any  =  await AsyncStorage.getItem(STORAGE_KEY)
     setTodos(JSON.parse(data))
    } catch(error) {
     console.error('load error', error)
+    }
   }
+
+  const loadMenu = async () => {
+    try {
+     const menu:any = await AsyncStorage.getItem(MENU_KEY)
+     setWorking(JSON.parse(menu))
+    } catch(error) {
+      console.error('load menu error', error)
+    }
   }
+
+
   const addTodo = async () => {
     if(text === '') return
     const newTodos = {...toDos, [Date.now()]: {text, working} }
@@ -61,6 +88,7 @@ export default function App() {
 
   useEffect(() => {
     loadToDos()
+    loadMenu()
   },[])
 
   return (
