@@ -4,11 +4,13 @@ import { theme } from './color';
 import { SetStateAction, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
+import BouncyCheckbox from "react-native-bouncy-checkbox";
 
 const STORAGE_KEY = '@toDos'
 type ToDo = {
   text: string
   working: boolean
+  completed: boolean
 }
 const MENU_KEY = '@menu'
     
@@ -17,13 +19,18 @@ export default function App() {
   const [working, setWorking] = useState(true)
   const [text, setText] = useState("")
   const [toDos, setTodos] = useState<{ [key: string]: ToDo} | undefined>(undefined)
+  const [completed, setCompleted] = useState(false)
+
   const onPressLife = () => {
     saveToMenu(false)
-    setWorking(false)}
+    setWorking(false)
+  }
+
   const onPressWork = () => {
     saveToMenu(true)
     setWorking(true)
   }
+
   const onChangeText = (payload: SetStateAction<string>) => setText(payload)
 
   const saveToDos = async (toSave: any) => {
@@ -63,7 +70,7 @@ export default function App() {
 
   const addTodo = async () => {
     if(text === '') return
-    const newTodos = {...toDos, [Date.now()]: {text, working} }
+    const newTodos = {...toDos, [Date.now()]: {text, working, completed: false} }
     setTodos(newTodos) 
     await saveToDos(newTodos)
     setText('')
@@ -86,6 +93,19 @@ export default function App() {
     ])
   } 
 
+  const completeTodo = async(id: string, isChecked: boolean) => {
+    setCompleted(isChecked)
+    if (!toDos) return
+    const newTodos = {
+      ...toDos,
+    }
+    if (id && newTodos.hasOwnProperty(id)) {
+      newTodos[id] = { ...toDos[id], completed: isChecked };
+    }
+    setTodos(newTodos) 
+    await saveToDos(newTodos)
+  }
+
   useEffect(() => {
     loadToDos()
     loadMenu()
@@ -107,9 +127,12 @@ export default function App() {
         toDos[key].working === working ? (
           <View style={styles.toDo} key={key}>
             <Text style={styles.toDoText}>{toDos[key].text}</Text>
+            <View  style={styles.toDoActions} key={key}>
+            <BouncyCheckbox size={20} onPress={() => completeTodo(key, !toDos[key].completed)} isChecked={toDos[key].completed} />
            <TouchableOpacity onPress={() => deleteTodo(key)}>
            <Feather name="trash-2" size={20} color="white" />
             </TouchableOpacity>
+            </View>
           </View>) : null
         )}</ScrollView>
     </View>
@@ -148,7 +171,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItem: "center",
     justifyContent: "space-between"
-
+  },
+  toDoActions: {
+    flexDirection: "row",
+    alignItem: "center",
+    justifyContent: "flex-end"
   },
   toDoText: {
     color: 'white',
